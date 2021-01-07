@@ -25,7 +25,7 @@ public:
 
 private:
 	mesh meshCube;
-	mat4x4 matProj;
+	mat4x4 matProj, matRotZ;
 
 	float fTheta = 0;
 
@@ -83,15 +83,6 @@ public:
 		matProj.m[3][2] = (-fFar * fNear) / (fFar - fNear);
 		matProj.m[2][3] = 1.0f;
 		matProj.m[3][3] = 0.0f;
-		printf("\n");
-		return true;
-	}
-	bool OnUserUpdate(float fElapsedTime) override {
-		Fill(0, 0, ScreenWidth(), ScreenHeight(), PIXEL_SOLID, FG_DARK_BLUE);
-		printf("\rElapsedTime: %f", fTheta);
-		mat4x4 matRotZ, matRotX, matRotY;
-		fTheta += .5f * fElapsedTime;
-		printf("\rElapsedTime: %f", fTheta);
 
 		// Rotation Z
 		matRotZ.m[0][0] = cosf(.1f);
@@ -100,6 +91,16 @@ public:
 		matRotZ.m[1][1] = cosf(.1f);
 		matRotZ.m[2][2] = 1;
 		matRotZ.m[3][3] = 1;
+
+
+		printf("\n");
+		return true;
+	}
+	bool OnUserUpdate(float fElapsedTime) override {
+		Fill(0, 0, ScreenWidth(), ScreenHeight(), PIXEL_SOLID, FG_DARK_BLUE);
+		mat4x4 matRotX, matRotY;
+		fTheta += 1.0f * fElapsedTime;
+		printf("\rElapsedTime: %f", fTheta);
 
 		// Rotation Y
 		matRotY.m[0][0] = cosf(fTheta);
@@ -113,46 +114,18 @@ public:
 		for(auto tri: meshCube.tris) {
 			triangle triProjected, triTranslated, triRotatedZ, triRotatedZY, triOriginShift, triOriginCorrected, triRotatedX;
 
-			// MultiplyMatrixVector(tri.p[0], triRotatedZ.p[0], matRotZ);
-			// MultiplyMatrixVector(tri.p[1], triRotatedZ.p[1], matRotZ);
-			// MultiplyMatrixVector(tri.p[2], triRotatedZ.p[2], matRotZ);
-
-			// MultiplyMatrixVector(triRotatedZ.p[0], triRotatedZX.p[0], matRotX);
-			// MultiplyMatrixVector(triRotatedZ.p[1], triRotatedZX.p[1], matRotX);
-			// MultiplyMatrixVector(triRotatedZ.p[2], triRotatedZX.p[2], matRotX);
-
-			// triTranslated = triRotatedZX;
-			// triTranslated.p[0].z = triRotatedZX.p[0].z + 3.0f;
-			// triTranslated.p[1].z = triRotatedZX.p[1].z + 3.0f;
-			// triTranslated.p[2].z = triRotatedZX.p[2].z + 3.0f;
-
-			for(int i=0; i < 3; i++) {
-				triOriginShift = tri;
-				//Move Origin to centre of cube
-				triOriginShift.p[i].x -= 0.5f;
-				triOriginShift.p[i].y -= 0.5f;
-				triOriginShift.p[i].z -= 0.5f;
-				// Rotate around Z Axis
-				MultiplyMatrixVector(triOriginShift.p[i], triRotatedZ.p[i], matRotZ);
-				// Rotate around X Axis
-				MultiplyMatrixVector(triRotatedZ.p[i], triRotatedZY.p[i], matRotY);
-			}
-
-			// //Scale into view
-			// triProjected.p[0].x += 1.0f; triProjected.p[0].y += 1.0f; 
-			// triProjected.p[1].x += 1.0f; triProjected.p[1].y += 1.0f; 
-			// triProjected.p[2].x += 1.0f; triProjected.p[2].y += 1.0f; 
-
-			// triProjected.p[0].x *= 0.5f * (float)ScreenWidth();
-			// triProjected.p[0].y *= 0.5f * (float)ScreenHeight(); 
-			// triProjected.p[1].x *= 0.5f * (float)ScreenWidth();
-			// triProjected.p[1].y *= 0.5f * (float)ScreenHeight(); 
-			// triProjected.p[2].x *= 0.5f * (float)ScreenWidth();
-			// triProjected.p[2].y *= 0.5f * (float)ScreenHeight(); 
-
 			for(int x=0; x < ScreenWidth(); x+=90) {
 				for(int y=0; y < ScreenHeight(); y+=80) {
 					for(int i=0; i < 3; i++) {
+						triOriginShift = tri;
+						//Move Origin to centre of cube
+						triOriginShift.p[i].x -= 0.5f;
+						triOriginShift.p[i].y -= 0.5f;
+						triOriginShift.p[i].z -= 0.5f;
+						// Rotate around Z Axis
+						MultiplyMatrixVector(triOriginShift.p[i], triRotatedZ.p[i], matRotZ);
+						// Rotate around X Axis
+						MultiplyMatrixVector(triRotatedZ.p[i], triRotatedZY.p[i], matRotY);
 						// Rotation X
 						matRotX.m[0][0] = 1;
 						matRotX.m[1][1] = cosf((1+x)*(1+y));
